@@ -1,0 +1,17 @@
+# Real research data -- never commit. Place your own workbook here to run the
+# real-data analysis (set USE_TOY_DATA = False in the notebook).
+data/size_distribution_of_guvs.xlsx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
