@@ -1,89 +1,97 @@
 # GUV-GrA Size Analysis
 
-Statistical analysis of giant unilamellar vesicle (GUV) diameters at two concentrations
-of Gramicidin A (GrA), in DOPC:DOPG membranes. Compares distribution shape, spread, and
-central tendency between conditions and produces publication-style figures.
+Statistical analysis of giant unilamellar vesicle (GUV) size distributions at two concentrations of Gramicidin A (0.01% and 0.02% w/w) in DOPC:DOPG membranes. This analysis complements my simulation work in [membrane-biophysics-models](https://github.com/TamannaMS/membrane-biophysics-models) and my experimental work on giant unilamellar vesicles (GUVs) at the Biophysics Laboratory, BUET, where I study how Gramicidin A ion channels drive membrane remodeling and poration.
 
 ## ⚠️ Data notice
 
-** I've kept the data notice and schema sections in this README because they're accurate and they matter — every figure here was generated from the synthetic toy dataset, not from my real measurements, and I don't want anyone citing placeholder numbers as results. The wording is brief, but the substance stays: this repo demonstrates the analysis pipeline; the science comes from the real data, which stays private.
-## Data schema
+**The original research data is not included in this repository.** Only a small synthetic **toy dataset** (`data/toy_dataset/toy_guv_sizes.xlsx`) is tracked by git, so that anyone can clone this repo and run the notebook end-to-end without access to my real measurements. All figures and numbers currently in this repo (`figures/`) were generated from that toy dataset — they are placeholders demonstrating the pipeline, not real results.
 
-| | |
-|---|---|
-| **Membrane** | DOPC:DOPG (60:40 mol%), my standard GUV prep |
-| **Peptide** | Gramicidin A, 0.01% and 0.02% (w/w) |
-| **Measured** | GUV diameter (µm) |
-| **Format** | one `.xlsx` workbook, one sheet per condition, one column of diameters per sheet |
-| **Not included here** | raw micrographs, per-vesicle shape/circularity, replicate metadata |
-## Repo structure
+To run the analysis on your own data, place your workbook at `data/size_distribution_of_guvs.xlsx` (git-ignored, so it won't be committed) and set `USE_TOY_DATA = False` in the second cell of the notebook.
 
-```
-.
-├── data/
-│   └── toy_dataset/
-│       └── toy_guv_sizes.xlsx              # synthetic, n=20/condition -- the only data tracked by git
-├── notebooks/
-│   └── 01_exploratory_analysis.ipynb       # stats + figures, runs end-to-end on the toy data
-├── src/
-│   └── load_data.py                        # shared data-loading helper
-├── scripts/
-│   └── generate_toy_data.py                # regenerates the toy dataset
-├── figures/                                 # PNG + SVG outputs from the notebook (toy-data run)
-├── requirements.txt
-├── .gitignore                               # excludes any real data file placed in data/
-└── LICENSE
-```
+## Repository Contents
+
+| Component | Analysis | Key methods | Output |
+|--------|---------|---------------|--------|
+| `01_exploratory_analysis.ipynb` | Descriptive statistics of GUV diameters per condition | mean, median, CV, skew, kurtosis | `summary_statistics.csv` |
+| `01_exploratory_analysis.ipynb` | Distribution shape: normal vs. log-normal | Shapiro-Wilk test, raw vs. log-transformed | printed test statistics |
+| `01_exploratory_analysis.ipynb` | Between-condition comparison | Mann-Whitney U, Welch's t-test, Cohen's d, KS test | printed test statistics |
+| `01_exploratory_analysis.ipynb` | Publication-style figures | histogram+KDE, violin/box/strip, ECDF, Q-Q plots | 4 figures (PNG + SVG) |
+| `src/load_data.py` | Shared data-loading helper | tidy long-format dataframe from multi-sheet `.xlsx` | — |
+| `scripts/generate_toy_data.py` | Synthetic dataset generator | log-normal sampling (seeded) | `toy_guv_sizes.xlsx` |
+
+---
+
+## 1. Data Loading
+
+`src/load_data.py`
+
+Loads GUV diameters from a multi-sheet Excel workbook into a tidy long-format dataframe — one row per vesicle, with derived spherical area and volume columns.
+
+**Format:** one sheet per condition, one column of diameters (µm) per sheet.
+
+**Derived quantities** (assume a perfect sphere — convenience values, not shape evidence):
+radius = diameter / 2 area = π · radius² volume = (4/3) · π · radius³                    
+## 2. Descriptive Statistics
+
+Per condition: n, mean, median, standard deviation, coefficient of variation, min/max, quartiles, skew, and excess kurtosis.
+
+## 3. Distribution Shape: Normal vs. Log-Normal
+
+GUV sizes from electroformation are commonly closer to log-normal than normal, so I test both before choosing a parametric or non-parametric comparison:
+Shapiro-Wilk W statistic on raw diameters Shapiro-Wilk W statistic on log(diameters)     
+## 4. Between-Condition Comparison
+
+**Non-parametric (primary):** Mann-Whitney U — no distribution assumption, robust to the skew in the 0.02% condition.
+
+**Parametric reference:** Welch's t-test (does not assume equal variance).
+
+**Effect size:** Cohen's d,
+d = (x̄₁ - x̄₂) / s_pooled
+
+**Distribution-level check:** two-sample Kolmogorov–Smirnov test on the cumulative distributions.
+
+## 5. Figures
+
+Four publication-style figures per run (PNG at 300 dpi + SVG):
+
+**Size distribution by Gramicidin A concentration (histogram + KDE)**
+
+![Histogram + KDE](figures/fig1_histogram_kde.png)
+
+**Diameter distribution (violin + box + raw points)**
+
+![Violin, box and raw points](figures/fig2_violin_box.png)
+
+**Empirical CDF of GUV diameters**
+
+![Empirical CDF](figures/fig3_ecdf.png)
+
+**Q-Q plots (normal) per condition**
+
+![Q-Q plots](figures/fig4_qq_normal.png)
+
+*All figures above were generated from the synthetic toy dataset — see the data notice.*
 
 ## Quickstart
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/TamannaMS/guv-gra-size-analysis.git
 cd guv-gra-size-analysis
 pip install -r requirements.txt
 jupyter notebook notebooks/01_exploratory_analysis.ipynb
-```
+I've set the notebook to run on the toy data by default (USE_TOY_DATA = True), so it works out of the box. To regenerate the toy dataset:python scripts/generate_toy_data.py
+Dependencies
+Python 3.9+
+pandas, NumPy, SciPy, Matplotlib, Seaborn, openpyxl
+pip install -r requirements.txt
+Planned extensions (blocked on raw images)
+02_image_segmentation.ipynb, 03_shape_analysis.ipynb, and 04_correlation_with_manual_counts.ipynb would add vesicle segmentation, circularity/shape descriptors, and validation against manually counted diameters — all require the original micrographs, which are outside the scope of this repo.
 
-The notebook defaults to `USE_TOY_DATA = True` since the real workbook isn't shipped here.
-Flip it to `False` once you've added your own `data/size_distribution_of_guvs.xlsx`.
+Author
+Tamanna Mostafa Snigdha M.S. Student (Biophysics), Department of Physics Bangladesh University of Engineering and Technology (BUET)
 
-To regenerate the toy dataset:
+GitHub: TamannaMS
 
-```bash
-cd scripts && python generate_toy_data.py
-```
+License
+MIT — see LICENSE.
 
-## What the notebook does
-
-1. Loads diameters from the workbook (toy or real) into a tidy dataframe
-2. Descriptive statistics per condition (mean, median, CV, skew, kurtosis)
-3. Normality checks (Shapiro-Wilk, raw vs. log-transformed)
-4. Between-condition comparison: Mann-Whitney U, Welch's t-test, Cohen's d, KS test
-5. Four publication-style figures: histogram+KDE, violin/box/strip, ECDF, Q-Q plots
-
-## Planned extensions (blocked on raw images)
-
-`02_image_segmentation.ipynb`, `03_shape_analysis.ipynb`, and
-`04_correlation_with_manual_counts.ipynb` would add vesicle segmentation, circularity/shape
-descriptors, and validation against manually counted diameters — all require the original
-micrographs, which are outside the scope of this repo.
-
-## Machine learning applicability
-
-With only one continuous variable (diameter) per vesicle and two labeled conditions, this
-dataset does not support meaningful ML — a classifier here would just be re-deriving the
-Mann-Whitney/KS results above with extra steps. ML becomes worth considering once
-per-vesicle shape descriptors (area, circularity, aspect ratio, texture) are extracted from
-images.
-
-## Related repository
-
-For the theoretical side of the same system, see
-[membrane-biophysics-models](https://github.com/TamannaMS/membrane-biophysics-models) —
-Python simulations of GUV osmotic swelling, bilayer permeability, electroporation pore
-kinetics, and a Gramicidin A concentration–radius model that complements the
-experimental analysis in this repo.
-
-## License
-
-MIT — see [LICENSE](LICENSE). Update the copyright holder name before publishing.
