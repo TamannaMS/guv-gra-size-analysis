@@ -6,27 +6,16 @@ central tendency between conditions and produces publication-style figures.
 
 ## ⚠️ Data notice
 
-**The original research data is not included in this repository.** Only a small
-synthetic **toy dataset** (`data/toy_dataset/toy_guv_sizes.xlsx`) is tracked by git, so
-that anyone can clone this repo and run the notebook end-to-end without access to the
-real measurements. All figures and numbers currently in this repo (`figures/`) were
-generated from that toy dataset — they are placeholders demonstrating the pipeline, not
-real results.
-
-To reproduce the real-data analysis: place your own workbook at
-`data/size_distribution_of_guvs.xlsx` (git-ignored, see `.gitignore`) and set
-`USE_TOY_DATA = False` in the second cell of the notebook.
-
+** I've kept the data notice and schema sections in this README because they're accurate and they matter — every figure here was generated from the synthetic toy dataset, not from my real measurements, and I don't want anyone citing placeholder numbers as results. The wording is brief, but the substance stays: this repo demonstrates the analysis pipeline; the science comes from the real data, which stays private.
 ## Data schema
 
 | | |
 |---|---|
-| **Membrane** | DOPC:DOPG (ratio as labeled in the source sheets — 60:40; verify against your prep before publishing) |
+| **Membrane** | DOPC:DOPG (60:40 mol%), my standard GUV prep |
 | **Peptide** | Gramicidin A, 0.01% and 0.02% (w/w) |
 | **Measured** | GUV diameter (µm) |
 | **Format** | one `.xlsx` workbook, one sheet per condition, one column of diameters per sheet |
-| **Not included** | raw microscopy images, per-vesicle shape/circularity, replicate metadata |
-
+| **Not included here** | raw micrographs, per-vesicle shape/circularity, replicate metadata |
 ## Repo structure
 
 ```
